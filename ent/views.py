@@ -20,10 +20,10 @@ from .permissions import IsOwnerOrReadOnly
 User = get_user_model()
 
 class DefaultsMixin(object):
-	authentication_classes = (
-		authentication.BasicAuthentication,
-		authentication.TokenAuthentication,
-	)
+	# authentication_classes = (
+	# 	authentication.BasicAuthentication,
+	# 	authentication.TokenAuthentication,
+	# )
 	permission_classes = (
 		permissions.IsAuthenticated,
 	)
