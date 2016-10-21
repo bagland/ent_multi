@@ -97,40 +97,40 @@ def login(request):
 		return createAPIErrorJsonReponse('Expected GET request', 400)
 
 
-def send_summary_email(request):
-		template = 'summary_email.html'
-		today = datetime.now().date()
-		tomorrow = today + timedelta(1)
-		today_start = datetime.combine(today, time())
-		today_end = datetime.combine(tomorrow, time())
-		transaction_list = Transaction.objects.filter(date__gte=today_start).filter(date__lt=today_end)
-		subject = 'Итоги за {}.{}.{}'.format(today.day, today.month, today.year)
-		email = 'baglan.daribayev@gmail.com'
-		plaintext = 'hi'
-		html = get_template(template)
-		total = 0.0
-		for transaction in transaction_list:
-						total += transaction.total_price
+def send_summary_email():
+	template = 'summary_email.html'
+	today = datetime.now().date()
+	tomorrow = today + timedelta(1)
+	today_start = datetime.combine(today, time())
+	today_end = datetime.combine(tomorrow, time())
+	transaction_list = Transaction.objects.filter(date__gte=today_start).filter(date__lt=today_end)
+	subject = 'Итоги за {}.{}.{}'.format(today.day, today.month, today.year)
+	email = 'baglan.daribayev@gmail.com'
+	plaintext = 'hi'
+	html = loader.get_template(template)
+	total = 0.0
+	for transaction in transaction_list:
+					total += transaction.total_price
 
-		data = Context({'transaction_list':transaction_list, 'total':total})
-		html_content = html.render(data)
-		msg = EmailMultiAlternatives(subject, plaintext, 'apteka.sofiya@gmail.com', [email, 'sofi_kz@mail.ru'])
-		msg.attach_alternative(html_content, "text/html")
-		msg.send()
-		return
+	data = Context({'transaction_list':transaction_list, 'total':total})
+	html_content = html.render(data)
+	msg = EmailMultiAlternatives(subject, plaintext, 'apteka.sofiya@gmail.com', [email, 'sofi_kz@mail.ru'])
+	msg.attach_alternative(html_content, "text/html")
+	msg.send()
+	return
 
 def revenue(request):
-		today = datetime.now().date()
-		tomorrow = today + timedelta(1)
-		today_start = datetime.combine(today, time())
-		today_end = datetime.combine(tomorrow, time())
-		transaction_list = Transaction.objects.filter(date__gte=today_start).filter(date__lt=today_end)
-		total = 0.0
-		for transaction in transaction_list:
-				total += transaction.total_price
+	today = datetime.now().date()
+	tomorrow = today + timedelta(1)
+	today_start = datetime.combine(today, time())
+	today_end = datetime.combine(tomorrow, time())
+	transaction_list = Transaction.objects.filter(date__gte=today_start).filter(date__lt=today_end)
+	total = 0.0
+	for transaction in transaction_list:
+			total += transaction.total_price
 
-		html = "<html><body>Today's revenue is {}</body></html>".format(total)
-		return HttpResponse(html)
+	html = "<html><body>Today's revenue is {}</body></html>".format(total)
+	return HttpResponse(html)
 
 def month_revenue(request):
 	today = datetime.now().date()

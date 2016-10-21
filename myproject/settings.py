@@ -27,6 +27,11 @@ SECRET_KEY = 'c=sb@rexm(th#(pw_ley+w-j8pe+&pf%ed22h01_w78!td6db5'
 
 ALLOWED_HOSTS = ['*']
 
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'apteka.sofiya@gmail.com'
+EMAIL_HOST_PASSWORD = 'e2e41177'
+EMAIL_PORT = 587
 
 # Application definition
 
@@ -104,6 +109,15 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # REST_FRAMEWORK
 
+
+# Celery
+
+BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Almaty'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/

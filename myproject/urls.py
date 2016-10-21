@@ -30,8 +30,8 @@ urlpatterns = [
     url(r'^api/token/', obtain_auth_token, name='api-token'),
     url(r'^api/', include(router.urls)),
     url(r'^api/products/(?P<code>[0-9]+)/add_items/?$', add_items, name='add_items'),
-    url(r'^send/', views.send_summary_email),
     url(r'^revenue/', views.revenue),
+    url(r'^month_revenue/', views.month_revenue),
     #url(r'^$',  views.index, name='index'),
     url(r'^register/', views.register),
     url(r'^login/', views.login)

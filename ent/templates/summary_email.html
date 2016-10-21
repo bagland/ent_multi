@@ -1,0 +1,24 @@
+<html>
+	<head>
+	</head>
+	<body>
+		<p>Выручка за день составила {{ total }} теңге</p>
+		<p>Список проданного товара:</p>
+		<table width="600" style="border:1px border-collapse:collapse">
+			<tr>
+				<th align="center">Наименование</th>
+				<th align="center">Дата</th>
+				<th align="center">Количество</th>
+				<th align="center">Грос стоимость</th>
+			</tr>
+			{% for transaction in transaction_list %}
+			<tr>
+				<td align="center">{{ transaction.product_name }}</td>
+				<td align="center">{{ transaction.date }}</td>
+				<td align="center">{{ transaction.amount }}</td>
+				<td align="center">{{ transaction.total_price }}</td>
+			</tr>
+			{% endfor %}
+		</table>
+	</body>
+</html>

@@ -1,0 +1,10 @@
+<head>
+{% load staticfiles %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="{% static 'js/highcharts/highcharts.js' %}"></script>
+{% load chartit %}
+{{ weatherchart|load_charts:"container"}}
+</head>
+<body>
+    <div id="container"> Chart will be rendered here </div>
+</body>

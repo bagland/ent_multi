@@ -1,1 +1,2 @@
-*.pyc
+myproject/*.pyc
+ent/*.pyc
