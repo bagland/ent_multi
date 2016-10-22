@@ -7,7 +7,7 @@ User = get_user_model()
 class ProductSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Product
-		fields = ('id', 'name', 'description', 'amount', 'price', 'code', 'owner')
+		fields = ('id', 'name', 'description', 'amount_left', 'retail_price', 'barcode', 'vendor_name', 'manufacturer')
 		read_only_fields = ('owner',)
 
 class TransactionSerializer(serializers.ModelSerializer):
