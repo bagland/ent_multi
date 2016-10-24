@@ -20,7 +20,7 @@ class ArrivalSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Arrival
 		fields = ('id', 'name', 'description', 'barcode', 'amount', 'wholesale_price', 'retail_price', 'date', 'owner')
-		read_only_fields = ('owner',)
+		read_only_fields = ('owner', 'date')
 
 
 class UserSerializer(serializers.ModelSerializer):

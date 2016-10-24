@@ -7,7 +7,7 @@ from decimal import Decimal
 from datetime import date, time, datetime, timedelta
 from django.views.generic.base import TemplateView
 
-from .filters import TransactionFilter
+from .filters import TransactionFilter, ArrivalFilter
 from rest_framework import authentication, permissions, viewsets, filters, status
 from rest_framework.decorators import api_view
 from rest_framework.authtoken.models import Token
@@ -62,6 +62,8 @@ class ArrivalViewSet(DefaultsMixin, viewsets.ModelViewSet):
 	queryset = Arrival.objects.order_by('date')
 	serializer_class = ArrivalSerializer
 	search_fields = ('name', 'date',)
+	filter_class = ArrivalFilter
+	ordering_fields = ('name', 'date',)
 
 	def perform_create(self, serializer):
 		user = self.request.user
