@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Product, Transaction
+from .models import Product, Transaction, Arrival
 
 User = get_user_model()
 
@@ -15,6 +15,13 @@ class TransactionSerializer(serializers.ModelSerializer):
 		model = Transaction
 		fields = ('id', 'product_code', 'product_name', 'date', 'amount', 'total_price', 'owner')
 		read_only_fields = ('id', 'date', 'product_name', 'total_price', 'owner')
+
+class ArrivalSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Arrival
+		fields = ('id', 'name', 'description', 'barcode', 'amount', 'wholesale_price', 'retail_price', 'date', 'owner')
+		read_only_fields = ('owner',)
+
 
 class UserSerializer(serializers.ModelSerializer):
 	full_name = serializers.CharField(source='get_full_name', read_only=True)

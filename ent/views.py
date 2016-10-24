@@ -11,8 +11,8 @@ from .filters import TransactionFilter
 from rest_framework import authentication, permissions, viewsets, filters, status
 from rest_framework.decorators import api_view
 from rest_framework.authtoken.models import Token
-from .models import Product, Transaction
-from .serializers import ProductSerializer, TransactionSerializer, UserSerializer
+from .models import Product, Transaction, Arrival
+from .serializers import ProductSerializer, TransactionSerializer, UserSerializer, ArrivalSerializer
 from django.template import loader, Context
 from django.core.mail import EmailMultiAlternatives
 from .permissions import IsOwnerOrReadOnly
@@ -40,14 +40,7 @@ class ProductViewSet(DefaultsMixin, viewsets.ModelViewSet):
 	queryset = Product.objects.order_by('name')
 	serializer_class = ProductSerializer
 	search_fields = ('name',)
-	lookup_field = 'code'
-
-	def add_items(self, request, code):
-		amount = request.data['amount']
-		product = Product.objects.get(code=code)
-		product.amount += Decimal(amount)
-		product.save()
-		return createAPISuccessJsonReponse({})
+	lookup_field = 'barcode'
 
 class TransactionViewSet(DefaultsMixin, viewsets.ModelViewSet):
 	queryset = Transaction.objects.order_by('date')
@@ -64,6 +57,34 @@ class TransactionViewSet(DefaultsMixin, viewsets.ModelViewSet):
 		product.save()
 		serializer.save(date=now, product_name=product.name, total_price=product.price*amount)
 		return createAPISuccessJsonReponse({})
+
+class ArrivalViewSet(DefaultsMixin, viewsets.ModelViewSet):
+	queryset = Arrival.objects.order_by('date')
+	serializer_class = ArrivalSerializer
+	search_fields = ('name', 'date',)
+
+	def perform_create(self, serializer):
+		user = self.request.user
+		now = timezone.now()
+		name = self.request.data['name']
+		barcode = self.request.data['barcode']
+		amount = self.request.data['amount']
+		description = self.request.data['description']
+		retail_price = self.request.data['retail_price']
+		product, created = Product.objects.get_or_create(barcode=barcode, owner=user)
+		print(product)
+		if not amount:
+			amount = 0
+		if not retail_price:
+			retail_price = 0
+		product.amount_left += Decimal(amount)
+		product.retail_price = retail_price
+		product.name = name
+		product.description = description
+		product.save()
+		serializer.save(owner=user)
+		return createAPISuccessJsonReponse({})
+
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
 	lookup_field = User.USERNAME_FIELD
