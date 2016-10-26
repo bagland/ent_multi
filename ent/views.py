@@ -9,8 +9,10 @@ from django.views.generic.base import TemplateView
 
 from .filters import TransactionFilter, ArrivalFilter
 from rest_framework import authentication, permissions, viewsets, filters, status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authtoken.models import Token
+from rest_framework.authentication import BasicAuthentication
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from .models import Product, Transaction, Arrival
 from .serializers import ProductSerializer, TransactionSerializer, UserSerializer, ArrivalSerializer
 from django.template import loader, Context
@@ -87,6 +89,40 @@ class ArrivalViewSet(DefaultsMixin, viewsets.ModelViewSet):
 		serializer.save(owner=user)
 		return createAPISuccessJsonReponse({})
 
+@api_view(['POST'])
+@authentication_classes((BasicAuthentication, JSONWebTokenAuthentication))
+@permission_classes((permissions.IsAuthenticated,))
+def arrival_collection(request):
+	invalid = False
+	failed_list = []
+	arrival_list = request.data
+	for arrival in arrival_list:
+		user = request.user
+		serializer = ArrivalSerializer(data=arrival)
+		if serializer.is_valid():
+			now = timezone.now()
+			name = arrival['name']
+			barcode = arrival['barcode']
+			amount = arrival.get('amount', Decimal(0.0))
+			description = arrival.get('description', '')
+			retail_price = arrival.get('retail_price', 0.0)
+			product, created = Product.objects.get_or_create(barcode=barcode, owner=user)
+			if not amount:
+				amount = 0
+			if not retail_price:
+				retail_price = 0
+			product.amount_left += Decimal(amount)
+			product.retail_price = retail_price
+			product.name = name
+			product.description = description
+			product.save()
+			serializer.save(owner=user)
+		else:
+			invalid = True
+			failed_list.append(arrival)
+	if invalid:
+		return createAPIErrorJsonReponse(failed_list, 400)
+	return createAPISuccessJsonReponse({})
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
 	lookup_field = User.USERNAME_FIELD

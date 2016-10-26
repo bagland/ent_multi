@@ -36,5 +36,6 @@ urlpatterns = [
     url(r'^month_revenue/', views.month_revenue),
     #url(r'^$',  views.index, name='index'),
     url(r'^register/', views.register),
-    url(r'^login/', views.login)
+    url(r'^login/', views.login),
+    url(r'^api/arrival_collection/', views.arrival_collection)
 ]
