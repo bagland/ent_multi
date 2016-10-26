@@ -1,4 +1,4 @@
 myproject/*.pyc
 ent/*.pyc
 *.sqlite3
-myproject/migrations/
+ent/migrations/
