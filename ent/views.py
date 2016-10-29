@@ -48,17 +48,7 @@ class TransactionViewSet(DefaultsMixin, viewsets.ModelViewSet):
 	queryset = Transaction.objects.order_by('date')
 	serializer_class = TransactionSerializer
 	filter_class = TransactionFilter
-	search_fields = ('product_name', 'date',)
-
-	def perform_create(self, serializer):
-		now = timezone.now()
-		product_code = self.request.data['product_code']
-		amount = self.request.data['amount']
-		product = Product.objects.get(code=product_code)
-		product.amount -= Decimal(amount)
-		product.save()
-		serializer.save(date=now, product_name=product.name, total_price=product.price*amount)
-		return createAPISuccessJsonReponse({})
+	search_fields = ('date',)
 
 class ArrivalViewSet(DefaultsMixin, viewsets.ModelViewSet):
 	queryset = Arrival.objects.order_by('date')

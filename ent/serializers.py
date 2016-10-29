@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Product, Transaction, Arrival
+from .models import Product, Transaction, Arrival, SoldProduct
 
 User = get_user_model()
 
@@ -10,11 +10,18 @@ class ProductSerializer(serializers.ModelSerializer):
 		fields = ('id', 'name', 'description', 'amount_left', 'retail_price', 'barcode', 'vendor_name', 'manufacturer')
 		read_only_fields = ('owner',)
 
+class SoldProductSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = SoldProduct
+		fields = ('id', 'name', 'description', 'barcode', 'amount', 'retail_price', 'wholesale_price', 'transaction')
+		read_only_fields = ('retail_price', 'wholesale_price', 'name', 'description', 'transaction')
+
 class TransactionSerializer(serializers.ModelSerializer):
+	sold_products = SoldProductSerializer(many=True)
 	class Meta:
 		model = Transaction
-		fields = ('id', 'product_code', 'product_name', 'date', 'amount', 'total_price', 'owner')
-		read_only_fields = ('id', 'date', 'product_name', 'total_price', 'owner')
+		fields = ('id', 'date', 'sold_products')
+		read_only_fields = ('id',)
 
 class ArrivalSerializer(serializers.ModelSerializer):
 	class Meta:
