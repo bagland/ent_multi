@@ -31,8 +31,17 @@ class ArrivalSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-	full_name = serializers.CharField(source='get_full_name', read_only=True)
+	password = serializers.CharField(write_only=True, required=False)
 
 	class Meta:
 		model = User
-		fields = ('id', User.USERNAME_FIELD, 'password', 'full_name', 'is_active', 'email',)
+		fields = ('id', User.USERNAME_FIELD, 'is_active', 
+			'created_at', 'updated_at', 'first_name', 'last_name', 
+			'password',)
+		read_only_fields = ('is_active', 'created_at', 'updated_at',)
+
+	def create(self, validated_data):
+		user = User.objects.create(**validated_data)
+		user.set_password(validated_data['password'])
+		user.save()
+		return user

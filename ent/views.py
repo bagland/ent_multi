@@ -114,9 +114,9 @@ def arrival_collection(request):
 		return createAPIErrorJsonReponse(failed_list, 400)
 	return createAPISuccessJsonReponse({})
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
-	lookup_field = User.USERNAME_FIELD
-	lookup_url_kwarg = User.USERNAME_FIELD
+class UserViewSet(viewsets.ModelViewSet):
+	# lookup_field = User.USERNAME_FIELD
+	# lookup_url_kwarg = User.USERNAME_FIELD
 	queryset = User.objects.order_by(User.USERNAME_FIELD)
 	serializer_class = UserSerializer
 
