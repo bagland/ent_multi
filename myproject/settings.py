@@ -34,6 +34,8 @@ EMAIL_HOST_USER = 'apteka.sofiya@gmail.com'
 EMAIL_HOST_PASSWORD = 'e2e41177'
 EMAIL_PORT = 587
 
+AUTH_USER_MODEL = 'ent.MyUser'
+
 # Application definition
 
 INSTALLED_APPS = [
