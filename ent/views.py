@@ -79,71 +79,11 @@ class ArrivalViewSet(DefaultsMixin, viewsets.ModelViewSet):
 	# 	serializer.save(owner=user)
 	# 	return createAPISuccessJsonReponse({})
 
-@api_view(['POST'])
-@authentication_classes((BasicAuthentication, JSONWebTokenAuthentication))
-@permission_classes((permissions.IsAuthenticated,))
-def arrival_collection(request):
-	invalid = False
-	failed_list = []
-	arrival_list = request.data
-	for arrival in arrival_list:
-		user = request.user
-		serializer = ArrivalSerializer(data=arrival)
-		if serializer.is_valid():
-			now = timezone.now()
-			name = arrival['name']
-			barcode = arrival['barcode']
-			amount = arrival.get('amount', Decimal(0.0))
-			description = arrival.get('description', '')
-			retail_price = arrival.get('retail_price', 0.0)
-			product, created = Product.objects.get_or_create(barcode=barcode, owner=user)
-			if not amount:
-				amount = 0
-			if not retail_price:
-				retail_price = 0
-			product.amount_left += Decimal(amount)
-			product.retail_price = retail_price
-			product.name = name
-			product.description = description
-			product.save()
-			serializer.save(owner=user)
-		else:
-			invalid = True
-			failed_list.append(arrival)
-	if invalid:
-		return createAPIErrorJsonReponse(failed_list, 400)
-	return createAPISuccessJsonReponse({})
-
 class UserViewSet(viewsets.ModelViewSet):
 	# lookup_field = User.USERNAME_FIELD
 	# lookup_url_kwarg = User.USERNAME_FIELD
 	queryset = User.objects.order_by(User.USERNAME_FIELD)
 	serializer_class = UserSerializer
-
-@api_view(['POST'])
-def register(request):
-	serializer = UserSerializer(data=request.data)
-	if serializer.is_valid():
-		User.objects.create_user(**serializer.validated_data)
-
-		return HttpResponse(serializer.validated_data, status=status.HTTP_201_CREATED)
-
-	return HttpResponse({'status':'Bad request', 'message':'Account could not be created with received data'}, status=status.HTTP_400_BAD_REQUEST)
-
-def login(request):
-	if request.method == 'POST':
-		username = request.POST.get('username')
-		password = request.POST.get('password')
-
-		user = authenticate(username=username, password=password)
-		if user:
-			token = Token.objects.get(user=user)
-			return createAPISuccessJsonReponse({'token':token})
-		else:
-			return createAPIErrorJsonReponse('Invalid login details', 400)
-	else:
-		return createAPIErrorJsonReponse('Expected GET request', 400)
-
 
 def send_summary_email():
 	template = 'summary_email.html'
