@@ -39,18 +39,27 @@ class DefaultsMixin(object):
 	)
 
 class ProductViewSet(DefaultsMixin, viewsets.ModelViewSet):
+	"""
+	Список товаров
+	"""
 	queryset = Product.objects.order_by('name')
 	serializer_class = ProductSerializer
 	search_fields = ('name',)
 	lookup_field = 'barcode'
 
 class TransactionViewSet(DefaultsMixin, viewsets.ModelViewSet):
+	"""
+	Продажа товара
+	"""
 	queryset = Transaction.objects.order_by('date')
 	serializer_class = TransactionSerializer
 	filter_class = TransactionFilter
 	search_fields = ('date',)
 
 class ArrivalViewSet(DefaultsMixin, viewsets.ModelViewSet):
+	"""
+	Приход товара
+	"""
 	queryset = Arrival.objects.order_by('date')
 	serializer_class = ArrivalSerializer
 	search_fields = ('date',)
@@ -82,6 +91,9 @@ class ArrivalViewSet(DefaultsMixin, viewsets.ModelViewSet):
 class UserViewSet(viewsets.ModelViewSet):
 	# lookup_field = User.USERNAME_FIELD
 	# lookup_url_kwarg = User.USERNAME_FIELD
+	"""
+	Создание пользователей
+	"""
 	queryset = User.objects.order_by(User.USERNAME_FIELD)
 	serializer_class = UserSerializer
 
