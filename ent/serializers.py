@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from decimal import Decimal
 from .models import Product, Transaction, Arrival, SoldProduct, ArrivedProduct
 
@@ -8,13 +9,13 @@ User = get_user_model()
 class ProductSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Product
-		fields = ('id', 'name', 'description', 'amount_left', 'retail_price', 'barcode', 'vendor_name', 'manufacturer', 'owner')
+		fields = ('id', 'name', 'description', 'amount_left', 'wholesale_price', 'retail_price', 'barcode', 'vendor_name', 'manufacturer', 'owner')
 		read_only_fields = ('owner',)
 
 class SoldProductSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = SoldProduct
-		fields = ('id', 'name', 'description', 'barcode', 'amount', 'retail_price', 'wholesale_price', 'transaction')
+		fields = ('id', 'name', 'barcode', 'amount', 'retail_price', 'wholesale_price', 'transaction')
 		read_only_fields = ('retail_price', 'wholesale_price', 'name', 'description', 'transaction')
 
 class TransactionSerializer(serializers.ModelSerializer):
@@ -22,24 +23,29 @@ class TransactionSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Transaction
 		fields = ('id', 'date', 'owner', 'sold_products')
-		read_only_fields = ('owner',)
+		read_only_fields = ('owner', 'date')
 
 	def create(self, validated_data):
 		request = self.context.get('request', None)
-		if request is None and request.user.is_anonymous():
+		if request is None or request.user.is_anonymous():
 			raise serializers.ValidationError("Must be logged in to make a transaction.")
 		products_data = validated_data.pop('sold_products')
-		transaction = Transaction.objects.create(**validated_data)
-		transaction(owner=request.user)
-		transaction(date=timezone.now())
-		transaction.save()
+		transaction = Transaction.objects.create(owner=request.user, date=timezone.now(), **validated_data)
 		for product_data in products_data:
 			amount = product_data['amount']
 			barcode = product_data['barcode']
 			product = Product.objects.get(barcode=barcode)
+			print(product)
 			product.amount_left -= Decimal(amount)
 			product.save()
-			SoldProduct.objects.create(transaction=transaction, **product_data)
+			SoldProduct.objects.create(
+				transaction=transaction, 
+				name = product.name,
+				wholesale_price=product.wholesale_price, 
+				retail_price=product.retail_price, 
+				description=product.description, 
+				**product_data
+			)
 		return transaction
 
 class ArrivedProductSerializer(serializers.ModelSerializer):
@@ -60,10 +66,7 @@ class ArrivalSerializer(serializers.ModelSerializer):
 		if request is None and request.user.is_anonymous():
 			raise serializers.ValidationError("Must be logged in to make an arrival.")
 		products_data = validated_data.pop('arrived_products')
-		arrival = Arrival.objects.create(**validated_data)
-		arrival(owner = request.user)
-		arrival(date=timezone.now())
-		arrival.save()
+		arrival = Arrival.objects.create(owner=request.user, date=timezone.now(), **validated_data)
 		for product_data in products_data:
 			barcode = product_data['barcode']
 			product, created = Product.objects.get_or_create(barcode=barcode)

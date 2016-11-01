@@ -53,31 +53,31 @@ class TransactionViewSet(DefaultsMixin, viewsets.ModelViewSet):
 class ArrivalViewSet(DefaultsMixin, viewsets.ModelViewSet):
 	queryset = Arrival.objects.order_by('date')
 	serializer_class = ArrivalSerializer
-	search_fields = ('name', 'date',)
+	search_fields = ('date',)
 	filter_class = ArrivalFilter
-	ordering_fields = ('name', 'date',)
+	ordering_fields = ('date',)
 
-	def perform_create(self, serializer):
-		user = self.request.user
-		now = timezone.now()
-		name = self.request.data['name']
-		barcode = self.request.data['barcode']
-		amount = self.request.data['amount']
-		description = self.request.data['description']
-		retail_price = self.request.data['retail_price']
-		product, created = Product.objects.get_or_create(barcode=barcode, owner=user)
-		print(product)
-		if not amount:
-			amount = 0
-		if not retail_price:
-			retail_price = 0
-		product.amount_left += Decimal(amount)
-		product.retail_price = retail_price
-		product.name = name
-		product.description = description
-		product.save()
-		serializer.save(owner=user)
-		return createAPISuccessJsonReponse({})
+	# def perform_create(self, serializer):
+	# 	user = self.request.user
+	# 	now = timezone.now()
+	# 	name = self.request.data['name']
+	# 	barcode = self.request.data['barcode']
+	# 	amount = self.request.data['amount']
+	# 	description = self.request.data['description']
+	# 	retail_price = self.request.data['retail_price']
+	# 	product, created = Product.objects.get_or_create(barcode=barcode, owner=user)
+	# 	print(product)
+	# 	if not amount:
+	# 		amount = 0
+	# 	if not retail_price:
+	# 		retail_price = 0
+	# 	product.amount_left += Decimal(amount)
+	# 	product.retail_price = retail_price
+	# 	product.name = name
+	# 	product.description = description
+	# 	product.save()
+	# 	serializer.save(owner=user)
+	# 	return createAPISuccessJsonReponse({})
 
 @api_view(['POST'])
 @authentication_classes((BasicAuthentication, JSONWebTokenAuthentication))
