@@ -59,7 +59,7 @@ class ArrivalSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Arrival
 		fields = ('id', 'date', 'owner', 'arrived_products')
-		read_only_fields = ('owner',)
+		read_only_fields = ('owner', 'date')
 
 	def create(self, validated_data):
 		request = self.context.get('request', None)
