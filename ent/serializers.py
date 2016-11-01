@@ -70,15 +70,14 @@ class ArrivalSerializer(serializers.ModelSerializer):
 		for product_data in products_data:
 			barcode = product_data['barcode']
 			product, created = Product.objects.get_or_create(barcode=barcode)
-			if created:
-				product.amount_left += product_data['amount']
-				product.wholesale_price = product_data['wholesale_price']
-				product.retail_price = product_data['retail_price']
-				product.name = product_data['name']
-				product.description = product_data['description']
-				product.vendor_name = product_data['vendor_name']
-				product.manufacturer = product_data['manufacturer']
-
+			product.amount_left += product_data['amount']
+			product.wholesale_price = product_data['wholesale_price']
+			product.retail_price = product_data['retail_price']
+			product.name = product_data['name']
+			product.description = product_data.get('description', '')
+			product.vendor_name = product_data.get('vendor_name', '')
+			product.manufacturer = product_data.get('manufacturer', '')
+			product.save()
 			ArrivedProduct.objects.create(arrival=arrival, **product_data)
 		return arrival
 
