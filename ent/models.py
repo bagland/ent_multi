@@ -9,7 +9,8 @@ class Product(models.Model):
 	name = models.CharField(max_length=100, default='')
 	description = models.TextField(blank=True, default='')
 	amount_left = models.DecimalField(default=0, max_digits=10, decimal_places=2)
-	retail_price = models.IntegerField(default=0)
+	retail_price = models.DecimalField(default=0, max_digits=10, decimal_places=2)
+	wholesale_price = models.DecimalField(default=0, max_digits=10, decimal_places=2)
 	barcode = models.CharField(unique=True, max_length=100)
 	vendor_name = models.CharField(default='', max_length=100)
 	manufacturer = models.CharField(default='', max_length=100)
@@ -31,7 +32,7 @@ class SoldProduct(models.Model):
 	barcode = models.CharField(max_length=100)
 	amount = models.DecimalField(max_digits=10, decimal_places=2)
 	wholesale_price = models.DecimalField(max_digits=10, decimal_places=2)
-	retail_price = models.IntegerField()
+	retail_price = models.DecimalField(max_digits=10, decimal_places=2)
 	transaction = models.ForeignKey(Transaction, related_name='sold_products', blank=True)
 
 	def __str__(self):
@@ -50,7 +51,7 @@ class ArrivedProduct(models.Model):
 	barcode = models.CharField(max_length=100)
 	amount = models.DecimalField(max_digits=10, decimal_places=2)
 	wholesale_price = models.DecimalField(default=0, max_digits=10, decimal_places=2)
-	retail_price = models.IntegerField(default=0)
+	retail_price = models.DecimalField(default=0, max_digits=10, decimal_places=2)
 	vendor_name = models.CharField(default='', max_length=100)
 	manufacturer = models.CharField(default='', max_length=100)
 	arrival = models.ForeignKey(Arrival, related_name='arrived_products', blank=True)
