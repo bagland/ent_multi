@@ -7,7 +7,7 @@ from decimal import Decimal
 from datetime import date, time, datetime, timedelta
 from django.views.generic.base import TemplateView
 
-from .filters import SalesFilter, ArrivalFilter
+from .filters import SalesFilter, ArrivalFilter, ProductFilter
 from rest_framework import authentication, permissions, viewsets, filters, status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authtoken.models import Token
@@ -44,8 +44,9 @@ class ProductViewSet(DefaultsMixin, viewsets.ModelViewSet):
 	"""
 	queryset = Product.objects.order_by('name')
 	serializer_class = ProductSerializer
-	search_fields = ('name',)
+	search_fields = ('name', 'barcode', 'description',)
 	lookup_field = 'barcode'
+	filter_class = ProductFilter
 
 class SalesViewSet(DefaultsMixin, viewsets.ModelViewSet):
 	"""
