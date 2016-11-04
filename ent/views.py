@@ -7,14 +7,14 @@ from decimal import Decimal
 from datetime import date, time, datetime, timedelta
 from django.views.generic.base import TemplateView
 
-from .filters import TransactionFilter, ArrivalFilter
+from .filters import SalesFilter, ArrivalFilter
 from rest_framework import authentication, permissions, viewsets, filters, status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import BasicAuthentication
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
-from .models import Product, Transaction, Arrival
-from .serializers import ProductSerializer, TransactionSerializer, UserSerializer, ArrivalSerializer
+from .models import Product, Sales, Arrival
+from .serializers import ProductSerializer, SalesSerializer, UserSerializer, ArrivalSerializer
 from django.template import loader, Context
 from django.core.mail import EmailMultiAlternatives
 from .permissions import IsOwnerOrReadOnly
@@ -47,13 +47,13 @@ class ProductViewSet(DefaultsMixin, viewsets.ModelViewSet):
 	search_fields = ('name',)
 	lookup_field = 'barcode'
 
-class TransactionViewSet(DefaultsMixin, viewsets.ModelViewSet):
+class SalesViewSet(DefaultsMixin, viewsets.ModelViewSet):
 	"""
 	Продажа товара
 	"""
-	queryset = Transaction.objects.order_by('date')
-	serializer_class = TransactionSerializer
-	filter_class = TransactionFilter
+	queryset = Sales.objects.order_by('date')
+	serializer_class = SalesSerializer
+	filter_class = SalesFilter
 	search_fields = ('date',)
 
 class ArrivalViewSet(DefaultsMixin, viewsets.ModelViewSet):
@@ -103,16 +103,16 @@ def send_summary_email():
 	tomorrow = today + timedelta(1)
 	today_start = datetime.combine(today, time())
 	today_end = datetime.combine(tomorrow, time())
-	transaction_list = Transaction.objects.filter(date__gte=today_start).filter(date__lt=today_end)
+	sales_list = Sales.objects.filter(date__gte=today_start).filter(date__lt=today_end)
 	subject = 'Итоги за {}.{}.{}'.format(today.day, today.month, today.year)
 	email = 'baglan.daribayev@gmail.com'
 	plaintext = 'hi'
 	html = loader.get_template(template)
 	total = 0.0
-	for transaction in transaction_list:
-					total += transaction.total_price
+	for sale in sales_list:
+					total += sale.total_price
 
-	data = Context({'transaction_list':transaction_list, 'total':total})
+	data = Context({'transaction_list':sales_list, 'total':total})
 	html_content = html.render(data)
 	msg = EmailMultiAlternatives(subject, plaintext, 'apteka.sofiya@gmail.com', [email, 'sofi_kz@mail.ru'])
 	msg.attach_alternative(html_content, "text/html")
@@ -124,20 +124,20 @@ def revenue(request):
 	tomorrow = today + timedelta(1)
 	today_start = datetime.combine(today, time())
 	today_end = datetime.combine(tomorrow, time())
-	transaction_list = Transaction.objects.filter(date__gte=today_start).filter(date__lt=today_end)
+	sales_list = Sales.objects.filter(date__gte=today_start).filter(date__lt=today_end)
 	total = 0.0
-	for transaction in transaction_list:
-			total += transaction.total_price
+	for sale in sales_list:
+			total += sale.total_price
 
 	html = "<html><body>Today's revenue is {}</body></html>".format(total)
 	return HttpResponse(html)
 
 def month_revenue(request):
 	today = datetime.now().date()
-	transaction_list = Transaction.objects.filter(date__month=today.month).order_by('date')
+	sales_list = Sales.objects.filter(date__month=today.month).order_by('date')
 	total = 0.0
-	for transaction in transaction_list:
-		total += transaction.total_price
+	for sale in sales_list:
+		total += sale.total_price
 
 	html = "<html><body>This month's revenue is {}</body></html>".format(total)
 	return HttpResponse(html)

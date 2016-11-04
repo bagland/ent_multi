@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from decimal import Decimal
-from .models import Product, Transaction, Arrival, SoldProduct, ArrivedProduct
+from .models import Product, Sales, Arrival, SoldProduct, ArrivedProduct
 
 User = get_user_model()
 
@@ -15,22 +15,22 @@ class ProductSerializer(serializers.ModelSerializer):
 class SoldProductSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = SoldProduct
-		fields = ('id', 'name', 'barcode', 'amount', 'retail_price', 'wholesale_price', 'transaction')
-		read_only_fields = ('retail_price', 'wholesale_price', 'name', 'description', 'transaction')
+		fields = ('id', 'name', 'barcode', 'amount', 'retail_price', 'wholesale_price', 'sales')
+		read_only_fields = ('retail_price', 'wholesale_price', 'name', 'description', 'sales')
 
-class TransactionSerializer(serializers.ModelSerializer):
+class SalesSerializer(serializers.ModelSerializer):
 	sold_products = SoldProductSerializer(many=True)
 	class Meta:
-		model = Transaction
+		model = Sales
 		fields = ('id', 'date', 'owner', 'sold_products')
 		read_only_fields = ('owner', 'date')
 
 	def create(self, validated_data):
 		request = self.context.get('request', None)
 		if request is None or request.user.is_anonymous():
-			raise serializers.ValidationError("Must be logged in to make a transaction.")
+			raise serializers.ValidationError("Must be logged in to make a sales.")
 		products_data = validated_data.pop('sold_products')
-		transaction = Transaction.objects.create(owner=request.user, date=timezone.now(), **validated_data)
+		sales = Sales.objects.create(owner=request.user, date=timezone.now(), **validated_data)
 		for product_data in products_data:
 			amount = product_data['amount']
 			barcode = product_data['barcode']
@@ -39,14 +39,14 @@ class TransactionSerializer(serializers.ModelSerializer):
 			product.amount_left -= Decimal(amount)
 			product.save()
 			SoldProduct.objects.create(
-				transaction=transaction, 
+				sales=sales, 
 				name = product.name,
 				wholesale_price=product.wholesale_price, 
 				retail_price=product.retail_price, 
 				description=product.description, 
 				**product_data
 			)
-		return transaction
+		return sales
 
 class ArrivedProductSerializer(serializers.ModelSerializer):
 	class Meta:

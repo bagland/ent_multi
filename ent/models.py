@@ -19,7 +19,7 @@ class Product(models.Model):
 	def __str__(self):
 		return self.name
 
-class Transaction(models.Model):
+class Sales(models.Model):
 	date = models.DateTimeField(default=timezone.now)
 	owner = models.ForeignKey(settings.AUTH_USER_MODEL, default=4)
 
@@ -33,7 +33,7 @@ class SoldProduct(models.Model):
 	amount = models.DecimalField(max_digits=10, decimal_places=2)
 	wholesale_price = models.DecimalField(max_digits=10, decimal_places=2)
 	retail_price = models.DecimalField(max_digits=10, decimal_places=2)
-	transaction = models.ForeignKey(Transaction, related_name='sold_products', blank=True)
+	sales = models.ForeignKey(Sales, related_name='sold_products', blank=True)
 
 	def __str__(self):
 		return self.name

@@ -1,10 +1,10 @@
 import django_filters
-from .models import Transaction, Arrival
+from .models import Sales, Arrival
 
-class TransactionFilter(django_filters.FilterSet):
+class SalesFilter(django_filters.FilterSet):
 	date = django_filters.DateFilter(name='date', lookup_type='contains')
 	class Meta:
-		model = Transaction
+		model = Sales
 		fields = ('date',)
 
 class ArrivalFilter(django_filters.FilterSet):
