@@ -102,3 +102,17 @@ class MyUser(AbstractBaseUser):
 
 	def __str__(self):
 		return self.email
+
+class Company(models.Model):
+	name = models.CharField(max_length=60)
+
+class Role(models.Model):
+	user = models.ForeignKey(settings.AUTH_USER_MODEL)
+	company = models.ForeignKey(Company)
+	USER_TYPES = (
+		('AD', 'Admin'),
+		('OW', 'Owner'),
+		('SE', 'Seller'),
+	)
+	user_role = models.CharField(max_length=2, choices=USER_TYPES, default='OW')
+	last_updated = models.DateTimeField(auto_now=True)

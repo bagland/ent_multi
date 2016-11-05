@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from decimal import Decimal
-from .models import Product, Sales, Arrival, SoldProduct, ArrivedProduct
+from .models import Product, Sales, Arrival, SoldProduct, ArrivedProduct, Company, Role
 
 User = get_user_model()
 
@@ -83,16 +83,26 @@ class ArrivalSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
 	password = serializers.CharField(write_only=True, required=False)
+	company_name = serializers.CharField(write_only=True, required=True)	
 
 	class Meta:
 		model = User
 		fields = ('id', User.USERNAME_FIELD, 'is_active', 
 			'created_at', 'updated_at', 'first_name', 'last_name', 
-			'password',)
+			'password', 'company_name',)
 		read_only_fields = ('is_active', 'created_at', 'updated_at',)
 
 	def create(self, validated_data):
+		company_name = validated_data.pop('company_name')
 		user = User.objects.create(**validated_data)
 		user.set_password(validated_data['password'])
+		company, created = Company.objects.get_or_create(name=company_name)
+		role = Role.objects.create(
+			company=company,
+			user=user,
+			user_role='OW'
+		)
+		company.save()
+		role.save()
 		user.save()
 		return user
