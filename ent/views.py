@@ -7,17 +7,17 @@ from decimal import Decimal
 from datetime import date, time, datetime, timedelta
 from django.views.generic.base import TemplateView
 
-from .filters import SalesFilter, ArrivalFilter, ProductFilter
+from .filters import SalesFilter, ArrivalFilter, ProductFilter, ReturnsFilter
 from rest_framework import authentication, permissions, viewsets, filters, status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import BasicAuthentication
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
-from .models import Product, Sales, Arrival
-from .serializers import ProductSerializer, SalesSerializer, UserSerializer, ArrivalSerializer
+from .models import Product, Sales, Arrival, Returns
+from .serializers import ProductSerializer, SalesSerializer, UserSerializer, ArrivalSerializer, ReturnsSerializer
 from django.template import loader, Context
 from django.core.mail import EmailMultiAlternatives
-from .permissions import IsOwnerOrReadOnly
+from .permissions import IsPartOfCompany
 
 User = get_user_model()
 
@@ -27,7 +27,7 @@ class DefaultsMixin(object):
 	# 	authentication.TokenAuthentication,
 	# )
 	permission_classes = (
-		permissions.IsAuthenticated,
+		IsPartOfCompany,
 	)
 	paginate_by = 25
 	paginate_by_param = 'page_size'
@@ -55,6 +55,15 @@ class SalesViewSet(DefaultsMixin, viewsets.ModelViewSet):
 	queryset = Sales.objects.order_by('date')
 	serializer_class = SalesSerializer
 	filter_class = SalesFilter
+	search_fields = ('date',)
+
+class ReturnsViewSet(DefaultsMixin, viewsets.ModelViewSet):
+	"""
+	Возврат товара
+	"""
+	queryset = Returns.objects.order_by('date')
+	serializer_class = ReturnsSerializer
+	filter_class = ReturnsFilter
 	search_fields = ('date',)
 
 class ArrivalViewSet(DefaultsMixin, viewsets.ModelViewSet):
