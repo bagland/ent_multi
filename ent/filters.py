@@ -14,7 +14,7 @@ class ReturnsFilter(django_filters.FilterSet):
 	date_max = django_filters.DateFilter(name='date', lookup_type='lte')
 
 	class Meta:
-		model = Sales
+		model = Returns
 		fields = ('date_min', 'date_max',)
 
 class ArrivalFilter(django_filters.FilterSet):
