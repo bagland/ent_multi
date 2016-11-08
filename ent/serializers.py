@@ -105,7 +105,7 @@ class ArrivalSerializer(serializers.ModelSerializer):
 		arrival = Arrival.objects.create(operator=user, company=company, date=timezone.now(), **validated_data)
 		for product_data in products_data:
 			barcode = product_data['barcode']
-			product, created = Product.objects.get_or_create(barcode=barcode)
+			product, created = Product.objects.get_or_create(barcode=barcode, company=company)
 			product.amount_left += product_data['amount']
 			product.wholesale_price = product_data['wholesale_price']
 			product.retail_price = product_data['retail_price']
