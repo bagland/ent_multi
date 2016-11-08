@@ -36,9 +36,9 @@ class ArrivalFilter(django_filters.FilterSet):
 		fields = ('date_min', 'date_max',)
 		
 class ProductFilter(django_filters.FilterSet):
-	name = django_filters.CharFilter(name='name', lookup_type='contains')
-	barcode = django_filters.CharFilter(name='barcode', lookup_type='contains')
-	description = django_filters.CharFilter(name='description', lookup_type='contains')
+	name = django_filters.CharFilter(name='name', lookup_type='icontains')
+	barcode = django_filters.CharFilter(name='barcode', lookup_type='icontains')
+	description = django_filters.CharFilter(name='description', lookup_type='icontains')
 	class Meta:
 		model = Product
 		fields = ('name', 'barcode', 'description',)
