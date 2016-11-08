@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
@@ -107,6 +108,12 @@ class UserViewSet(viewsets.ModelViewSet):
 	"""
 	queryset = User.objects.order_by(User.USERNAME_FIELD)
 	serializer_class = UserSerializer
+
+def index(request):
+	print(settings.BASE_DIR)
+	html = loader.get_template('index.html')
+	html_content = html.render()
+	return HttpResponse(html_content)
 
 def send_summary_email():
 	template = 'summary_email.html'

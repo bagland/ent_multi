@@ -35,6 +35,6 @@ urlpatterns = [
     url(r'^api/', include(router.urls)),
     url(r'^revenue/', views.revenue),
     url(r'^month_revenue/', views.month_revenue),
-    #url(r'^$',  views.index, name='index'),
+    url(r'^$',  views.index, name='index'),
     url(r'^api/docs/', schema_view)
 ]

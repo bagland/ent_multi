@@ -1,4 +1,7 @@
 myproject/*.pyc
 ent/*.pyc
+ent/__pycache__/*.pyc
+myproject/__pycache__/*.pyc
 *.sqlite3
 ent/migrations/
+ent/migrations/*.py
