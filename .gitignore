@@ -5,3 +5,4 @@ myproject/__pycache__/*.pyc
 *.sqlite3
 ent/migrations/
 ent/migrations/*.py
+django-static/
