@@ -37,6 +37,7 @@ class SoldProduct(models.Model):
 	wholesale_price = models.DecimalField(max_digits=10, decimal_places=2)
 	retail_price = models.DecimalField(max_digits=10, decimal_places=2)
 	sales = models.ForeignKey(Sales, related_name='sold_products', blank=True)
+	date = models.DateTimeField(default=timezone.now)
 
 	def __str__(self):
 		return self.name
@@ -57,6 +58,7 @@ class ReturnedProduct(models.Model):
 	wholesale_price = models.DecimalField(max_digits=10, decimal_places=2)
 	retail_price = models.DecimalField(max_digits=10, decimal_places=2)
 	returns = models.ForeignKey(Returns, related_name='returned_products', blank=True)
+	date = models.DateTimeField(default=timezone.now)
 
 	def __str__(self):
 		return self.name
@@ -79,6 +81,7 @@ class ArrivedProduct(models.Model):
 	vendor_name = models.CharField(default='', max_length=100)
 	manufacturer = models.CharField(default='', max_length=100)
 	arrival = models.ForeignKey(Arrival, related_name='arrived_products', blank=True)
+	date = models.DateTimeField(default=timezone.now)
 	
 	def __str__(self):
 		return self.name

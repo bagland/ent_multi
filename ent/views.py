@@ -8,14 +8,14 @@ from decimal import Decimal
 from datetime import date, time, datetime, timedelta
 from django.views.generic.base import TemplateView
 
-from .filters import SalesFilter, ArrivalFilter, ProductFilter, ReturnsFilter
+from .filters import SalesFilter, ArrivalFilter, ProductFilter, ReturnsFilter, ArrivedProductFilter, SoldProductFilter, ReturnedProductFilter
 from rest_framework import authentication, permissions, viewsets, filters, status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import BasicAuthentication
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
-from .models import Product, Sales, Arrival, Returns
-from .serializers import ProductSerializer, SalesSerializer, UserSerializer, ArrivalSerializer, ReturnsSerializer
+from .models import Product, Sales, Arrival, Returns, SoldProduct, ReturnedProduct, ArrivedProduct
+from .serializers import ProductSerializer, SalesSerializer, UserSerializer, ArrivalSerializer, ReturnsSerializer, SoldProductSerializer, ReturnedProductSerializer, ArrivedProductSerializer
 from django.template import loader, Context
 from django.core.mail import EmailMultiAlternatives
 from .permissions import IsPartOfCompany
@@ -59,6 +59,12 @@ class SalesViewSet(DefaultsMixin, viewsets.ModelViewSet):
 	filter_class = SalesFilter
 	search_fields = ('date',)
 
+class SoldProductViewSet(DefaultsMixin, viewsets.ReadOnlyModelViewSet):
+	queryset = SoldProduct.objects.order_by('date')
+	serializer_class = SoldProductSerializer
+	filter_class = SoldProductFilter
+	search_fields = ('name', 'date',)
+
 class ReturnsViewSet(DefaultsMixin, viewsets.ModelViewSet):
 	"""
 	Возврат товара
@@ -66,6 +72,12 @@ class ReturnsViewSet(DefaultsMixin, viewsets.ModelViewSet):
 	queryset = Returns.objects.order_by('date')
 	serializer_class = ReturnsSerializer
 	filter_class = ReturnsFilter
+	search_fields = ('date',)
+
+class ReturnedProductViewSet(DefaultsMixin, viewsets.ReadOnlyModelViewSet):
+	queryset = ReturnedProduct.objects.order_by('date')
+	serializer_class = ReturnedProductSerializer
+	filter_class = ReturnedProductFilter
 	search_fields = ('date',)
 
 class ArrivalViewSet(DefaultsMixin, viewsets.ModelViewSet):
@@ -77,6 +89,13 @@ class ArrivalViewSet(DefaultsMixin, viewsets.ModelViewSet):
 	search_fields = ('date',)
 	filter_class = ArrivalFilter
 	ordering_fields = ('date',)
+
+class ArrivedProductViewSet(DefaultsMixin, viewsets.ReadOnlyModelViewSet):
+	queryset = ArrivedProduct.objects.order_by('date')
+	serializer_class = ArrivedProductSerializer
+	search_fields = ('name','date',)
+	filter_class = ArrivedProductFilter
+	ordering_fields = ('name','date',)
 
 	# def perform_create(self, serializer):
 	# 	user = self.request.user

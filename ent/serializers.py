@@ -15,8 +15,8 @@ class ProductSerializer(serializers.ModelSerializer):
 class SoldProductSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = SoldProduct
-		fields = ('id', 'name', 'barcode', 'amount', 'retail_price', 'wholesale_price', 'sales')
-		read_only_fields = ('retail_price', 'wholesale_price', 'name', 'description', 'sales')
+		fields = ('id', 'name', 'barcode', 'amount', 'retail_price', 'wholesale_price', 'sales', 'date',)
+		read_only_fields = ('retail_price', 'wholesale_price', 'name', 'description', 'sales', 'date',)
 
 class SalesSerializer(serializers.ModelSerializer):
 	sold_products = SoldProductSerializer(many=True)
@@ -52,8 +52,8 @@ class SalesSerializer(serializers.ModelSerializer):
 class ReturnedProductSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = ReturnedProduct
-		fields = ('id', 'name', 'barcode', 'amount', 'retail_price', 'wholesale_price', 'returns')
-		read_only_fields = ('retail_price', 'wholesale_price', 'name', 'description', 'returns')
+		fields = ('id', 'name', 'barcode', 'amount', 'retail_price', 'wholesale_price', 'returns', 'date',)
+		read_only_fields = ('retail_price', 'wholesale_price', 'name', 'description', 'returns', 'date',)
 
 class ReturnsSerializer(serializers.ModelSerializer):
 	returned_products = ReturnedProductSerializer(many=True)
@@ -88,7 +88,8 @@ class ArrivedProductSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = ArrivedProduct
 		fields = ('id', 'name', 'description', 'barcode', 'amount', 'wholesale_price',
-			'retail_price', 'vendor_name', 'manufacturer', 'arrival')
+			'retail_price', 'vendor_name', 'manufacturer', 'arrival', 'date')
+		read_only_fields = ('date',)
 
 class ArrivalSerializer(serializers.ModelSerializer):
 	arrived_products = ArrivedProductSerializer(many=True)
