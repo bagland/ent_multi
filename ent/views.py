@@ -14,6 +14,8 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.response import Response
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from .models import Product, Sales, Arrival, Returns, SoldProduct, ReturnedProduct, ArrivedProduct, Company, Role
 from .serializers import ProductSerializer, SalesSerializer, UserSerializer, ArrivalSerializer, ReturnsSerializer, SoldProductSerializer, ReturnedProductSerializer, ArrivedProductSerializer
@@ -22,6 +24,17 @@ from django.core.mail import EmailMultiAlternatives
 from .permissions import IsPartOfCompany
 
 User = get_user_model()
+
+class TurnoverPagination(LimitOffsetPagination):
+	def get_paginated_response(self, data):
+		return Response({
+			'count': self.count,
+			'next': self.get_next_link(),
+            'previous': self.get_previous_link(),
+            'total_products': self.total_products,
+            'total_sum': self.total_sum,
+			'results': data
+		})
 
 class DefaultsMixin(object):
 	# authentication_classes = (
@@ -40,6 +53,41 @@ class DefaultsMixin(object):
 		filters.SearchFilter,
 		filters.OrderingFilter,
 	)
+
+class TurnoverMixin(DefaultsMixin):
+	pagination_class = TurnoverPagination
+	object_class = None
+	def list(self, request, *args, **kwargs):
+		if self.pagination_class is not None:
+			self._paginator = self.pagination_class()
+		self._paginator.total_products, self._paginator.total_sum = 0, 0
+		try:
+			role = Role.objects.get(user=request.user)
+			date_min = request.query_params.get('date_min', None)
+			date_max = request.query_params.get('date_max', None)
+			self._paginator.total_products, self._paginator.total_sum = self.get_total_products_and_sum(date_min, date_max)
+			self.queryset = self.queryset.filter(company=role.company)
+		except Role.DoesNotExist:
+			self.queryset = self.serializer_class.Meta.model.objects.none()
+		return super().list(request, *args, **kwargs)
+
+	def get_total_products_and_sum(self, date_min, date_max):
+		object_set = None
+		if date_min is not None:
+			object_set = self.object_class.objects.filter(date__gte=date_min)
+		if date_max is not None:
+			formatted_date_max = datetime.strptime(date_max, '%Y-%m-%d')
+			if object_set is None:
+				object_set = self.object_class.objects.filter(date__lte=formatted_date_max+timedelta(1))
+			else:
+				object_set = object_set.filter(date__lte=formatted_date_max+timedelta(1))
+		if object_set is None:
+			object_set = self.object_class.objects.all()
+		total_sum = 0.0
+		for product in object_set:
+			total_price = product.retail_price * product.amount
+			total_sum += float(total_price)
+		return object_set.count(), total_sum
 
 class ProductViewSet(DefaultsMixin, viewsets.ModelViewSet):
 	"""
@@ -60,23 +108,49 @@ class ProductViewSet(DefaultsMixin, viewsets.ModelViewSet):
 			self.queryset = Product.objects.none()
 		return super(ProductViewSet, self).list(request, *args, **kwargs)
 
-class SalesViewSet(DefaultsMixin, viewsets.ModelViewSet):
+class SalesViewSet(TurnoverMixin, viewsets.ModelViewSet):
 	"""
 	Продажа товара
 	"""
+	object_class = SoldProduct
 	queryset = Sales.objects.order_by('date')
 	serializer_class = SalesSerializer
 	filter_class = SalesFilter
 	search_fields = ('date',)
 
-	def list(self, request, *args, **kwargs):
-		try:
-			role = Role.objects.get(user=request.user)
-			self.queryset = Sales.objects.filter(company=role.company)
-		except Role.DoesNotExist:
-			# raise PermissionDenied('no products registered for a user')
-			self.queryset = Sales.objects.none()
-		return super(SalesViewSet, self).list(request, *args, **kwargs)
+	# def list(self, request, *args, **kwargs):
+	# 	if self.pagination_class is not None:
+	# 		self._paginator = self.pagination_class()
+	# 	self._paginator.total_products, self._paginator.total_sum = 0, 0
+	# 	try:
+	# 		role = Role.objects.get(user=request.user)
+	# 		date_min = request.query_params.get('date_min', None)
+	# 		date_max = request.query_params.get('date_max', None)
+	# 		self._paginator.total_products, self._paginator.total_sum = self.get_total_products_and_sum(date_min, date_max)
+	# 		self.queryset = self.queryset.filter(company=role.company)
+	# 	except Role.DoesNotExist:
+	# 		# raise PermissionDenied('no products registered for a user')
+	# 		print(self.serializer_class.Meta.model)
+	# 		self.queryset = self.serializer_class.Meta.model.objects.none()
+	# 	return super(SalesViewSet, self).list(request, *args, **kwargs)
+
+	# def get_total_products_and_sum(self, date_min, date_max):
+	# 	sales_set = None
+	# 	if date_min is not None:
+	# 		sales_set = SoldProduct.objects.filter(date__gte=date_min)
+	# 	if date_max is not None:
+	# 		formatted_date_max = datetime.strptime(date_max, '%Y-%m-%d')
+	# 		if sales_set is None:
+	# 			sales_set = SoldProduct.objects.filter(date__lte=formatted_date_max+timedelta(1))
+	# 		else:
+	# 			sales_set = sales_set.filter(date__lte=formatted_date_max+timedelta(1))
+	# 	if sales_set is None:
+	# 		sales_set = SoldProduct.objects.all()
+	# 	total_sum = 0.0
+	# 	for sold_product in sales_set:
+	# 		total_price = sold_product.retail_price * sold_product.amount
+	# 		total_sum += float(total_price)
+	# 	return sales_set.count(), total_sum
 
 class SoldProductViewSet(DefaultsMixin, viewsets.ReadOnlyModelViewSet):
 	queryset = SoldProduct.objects.order_by('date')
@@ -93,23 +167,15 @@ class SoldProductViewSet(DefaultsMixin, viewsets.ReadOnlyModelViewSet):
 			self.queryset = SoldProduct.objects.none()
 		return super(SoldProductViewSet, self).list(request, *args, **kwargs)
 
-class ReturnsViewSet(DefaultsMixin, viewsets.ModelViewSet):
+class ReturnsViewSet(TurnoverMixin, viewsets.ModelViewSet):
 	"""
 	Возврат товара
 	"""
+	object_class = ReturnedProduct
 	queryset = Returns.objects.order_by('date')
 	serializer_class = ReturnsSerializer
 	filter_class = ReturnsFilter
 	search_fields = ('date',)
-
-	def list(self, request, *args, **kwargs):
-		try:
-			role = Role.objects.get(user=request.user)
-			self.queryset = Returns.objects.filter(company=role.company)
-		except Role.DoesNotExist:
-			# raise PermissionDenied('no products registered for a user')
-			self.queryset = Returns.objects.none()
-		return super(ReturnsViewSet, self).list(request, *args, **kwargs)
 
 class ReturnedProductViewSet(DefaultsMixin, viewsets.ReadOnlyModelViewSet):
 	queryset = ReturnedProduct.objects.order_by('date')
@@ -126,24 +192,16 @@ class ReturnedProductViewSet(DefaultsMixin, viewsets.ReadOnlyModelViewSet):
 			self.queryset = ReturnedProduct.objects.none()
 		return super(ReturnedProductViewSet, self).list(request, *args, **kwargs)
 
-class ArrivalViewSet(DefaultsMixin, viewsets.ModelViewSet):
+class ArrivalViewSet(TurnoverMixin, viewsets.ModelViewSet):
 	"""
 	Приход товара
 	"""
+	object_class = ArrivedProduct
 	queryset = Arrival.objects.order_by('date')
 	serializer_class = ArrivalSerializer
 	search_fields = ('date',)
 	filter_class = ArrivalFilter
 	ordering_fields = ('date',)
-
-	def list(self, request, *args, **kwargs):
-		try:
-			role = Role.objects.get(user=request.user)
-			self.queryset = Arrival.objects.filter(company=role.company)
-		except Role.DoesNotExist:
-			# raise PermissionDenied('no products registered for a user')
-			self.queryset = Arrival.objects.none()
-		return super(ArrivalViewSet, self).list(request, *args, **kwargs)
 
 class ArrivedProductViewSet(DefaultsMixin, viewsets.ReadOnlyModelViewSet):
 	queryset = ArrivedProduct.objects.order_by('date')
