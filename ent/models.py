@@ -13,10 +13,12 @@ class Product(models.Model):
 	amount_left = models.DecimalField(default=0, max_digits=10, decimal_places=2)
 	retail_price = models.DecimalField(default=0, max_digits=10, decimal_places=2)
 	wholesale_price = models.DecimalField(default=0, max_digits=10, decimal_places=2)
-	barcode = models.CharField(unique=True, max_length=100)
+	barcode = models.CharField(max_length=100)
 	vendor_name = models.CharField(default='', max_length=100)
 	manufacturer = models.CharField(default='', max_length=100)
 	company = models.ForeignKey(Company)
+
+	unique_together = (('company', 'barcode'),)
 
 	def __str__(self):
 		return self.name
