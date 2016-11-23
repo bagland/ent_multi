@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from decimal import Decimal
 from .models import Product, Sales, Arrival, Returns, SoldProduct, ArrivedProduct, ReturnedProduct, Company, Role
+from .barcode import BarcodeDrawing
 
 User = get_user_model()
 
@@ -105,7 +106,12 @@ class ArrivalSerializer(serializers.ModelSerializer):
 		products_data = validated_data.pop('arrived_products')
 		arrival = Arrival.objects.create(operator=user, company=company, date=timezone.now(), **validated_data)
 		for product_data in products_data:
-			barcode = product_data['barcode']
+			name = product_data['name']
+			barcode = product_data.get('barcode', name)
+			print(barcode)
+			if barcode is None:
+				print("Creating barcode")
+				BarcodeDrawing(name, name).save(formats=['pdf'], outDir=company.name, fnRoot=name)
 			product, created = Product.objects.get_or_create(barcode=barcode, company=company)
 			product.amount_left += product_data['amount']
 			product.wholesale_price = product_data['wholesale_price']
@@ -115,7 +121,7 @@ class ArrivalSerializer(serializers.ModelSerializer):
 			product.vendor_name = product_data.get('vendor_name', '')
 			product.manufacturer = product_data.get('manufacturer', '')
 			product.save()
-			ArrivedProduct.objects.create(arrival=arrival, **product_data)
+			ArrivedProduct.objects.create(arrival=arrival, barcode=barcode, **product_data)
 		return arrival
 
 class UserSerializer(serializers.ModelSerializer):

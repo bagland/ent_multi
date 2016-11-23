@@ -76,7 +76,7 @@ class Arrival(models.Model):
 class ArrivedProduct(models.Model):
 	name = models.CharField(max_length=100)
 	description = models.TextField(blank=True, default='')
-	barcode = models.CharField(max_length=100)
+	barcode = models.CharField(blank=True, max_length=100)
 	amount = models.DecimalField(max_digits=10, decimal_places=2)
 	wholesale_price = models.DecimalField(default=0, max_digits=10, decimal_places=2)
 	retail_price = models.DecimalField(default=0, max_digits=10, decimal_places=2)
