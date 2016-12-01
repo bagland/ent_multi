@@ -118,39 +118,20 @@ class SalesViewSet(TurnoverMixin, viewsets.ModelViewSet):
 	filter_class = SalesFilter
 	search_fields = ('date',)
 
-	# def list(self, request, *args, **kwargs):
-	# 	if self.pagination_class is not None:
-	# 		self._paginator = self.pagination_class()
-	# 	self._paginator.total_products, self._paginator.total_sum = 0, 0
-	# 	try:
-	# 		role = Role.objects.get(user=request.user)
-	# 		date_min = request.query_params.get('date_min', None)
-	# 		date_max = request.query_params.get('date_max', None)
-	# 		self._paginator.total_products, self._paginator.total_sum = self.get_total_products_and_sum(date_min, date_max)
-	# 		self.queryset = self.queryset.filter(company=role.company)
-	# 	except Role.DoesNotExist:
-	# 		# raise PermissionDenied('no products registered for a user')
-	# 		print(self.serializer_class.Meta.model)
-	# 		self.queryset = self.serializer_class.Meta.model.objects.none()
-	# 	return super(SalesViewSet, self).list(request, *args, **kwargs)
-
-	# def get_total_products_and_sum(self, date_min, date_max):
-	# 	sales_set = None
-	# 	if date_min is not None:
-	# 		sales_set = SoldProduct.objects.filter(date__gte=date_min)
-	# 	if date_max is not None:
-	# 		formatted_date_max = datetime.strptime(date_max, '%Y-%m-%d')
-	# 		if sales_set is None:
-	# 			sales_set = SoldProduct.objects.filter(date__lte=formatted_date_max+timedelta(1))
-	# 		else:
-	# 			sales_set = sales_set.filter(date__lte=formatted_date_max+timedelta(1))
-	# 	if sales_set is None:
-	# 		sales_set = SoldProduct.objects.all()
-	# 	total_sum = 0.0
-	# 	for sold_product in sales_set:
-	# 		total_price = sold_product.retail_price * sold_product.amount
-	# 		total_sum += float(total_price)
-	# 	return sales_set.count(), total_sum
+	def destroy(self, request, *args, **kwargs):
+		user = request.user
+		role = Role.objects.get(user=user)
+		sales = Sales.objects.get(id=int(self.kwargs['pk']))
+		if sales.company == role.company:
+			sold_products = SoldProduct.objects.filter(sales=sales)
+			for sold_product in sold_products:
+				product = Product.objects.get(barcode=sold_product.barcode)
+				product.amount_left += sold_product.amount
+				product.save()
+				sold_product.delete()
+			return super(SalesViewSet, self).destroy(request, *args, **kwargs)
+		else:
+			createAPIErrorJsonReponse('Unauthorized.', 401)
 
 class SoldProductViewSet(DefaultsMixin, viewsets.ReadOnlyModelViewSet):
 	queryset = SoldProduct.objects.order_by('date')
@@ -177,6 +158,21 @@ class ReturnsViewSet(TurnoverMixin, viewsets.ModelViewSet):
 	filter_class = ReturnsFilter
 	search_fields = ('date',)
 
+	def destroy(self, request, *args, **kwargs):
+		user = request.user
+		role = Role.objects.get(user=user)
+		returns = Returns.objects.get(id=int(self.kwargs['pk']))
+		if returns.company == role.company:
+			returned_products = ReturnedProduct.objects.filter(returns=returns)
+			for returned_product in returned_products:
+				product = Product.objects.get(barcode=sold_product.barcode)
+				product.amount_left -= returned_product.amount
+				product.save()
+				returned_product.delete()
+			return super(ReturnsViewSet, self).destroy(request, *args, **kwargs)
+		else:
+			createAPIErrorJsonReponse('Unauthorized.', 401)
+
 class ReturnedProductViewSet(DefaultsMixin, viewsets.ReadOnlyModelViewSet):
 	queryset = ReturnedProduct.objects.order_by('date')
 	serializer_class = ReturnedProductSerializer
@@ -202,6 +198,21 @@ class ArrivalViewSet(TurnoverMixin, viewsets.ModelViewSet):
 	search_fields = ('date',)
 	filter_class = ArrivalFilter
 	ordering_fields = ('date',)
+
+	def destroy(self, request, *args, **kwargs):
+		user = request.user
+		role = Role.objects.get(user=user)
+		arrival = Arrival.objects.get(id=int(self.kwargs['pk']))
+		if arrival.company == role.company:
+			arrived_products = ArrivedProduct.objects.filter(arrival=arrival)
+			for arrived_product in arrived_products:
+				product = Product.objects.get(barcode=arrived_product.barcode)
+				product.amount_left -= arrived_product.amount
+				product.save()
+				arrived_product.delete()
+			return super(ArrivalViewSet, self).destroy(request, *args, **kwargs)
+		else:
+			createAPIErrorJsonReponse('Unauthorized.', 401)
 
 class ArrivedProductViewSet(DefaultsMixin, viewsets.ReadOnlyModelViewSet):
 	queryset = ArrivedProduct.objects.order_by('date')

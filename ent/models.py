@@ -17,6 +17,7 @@ class Product(models.Model):
 	vendor_name = models.CharField(default='', max_length=100)
 	manufacturer = models.CharField(default='', max_length=100)
 	company = models.ForeignKey(Company)
+	had_no_barcode = models.BooleanField(default=False)
 
 	unique_together = (('company', 'barcode'),)
 

@@ -4,14 +4,15 @@ from django.utils import timezone
 from decimal import Decimal
 from .models import Product, Sales, Arrival, Returns, SoldProduct, ArrivedProduct, ReturnedProduct, Company, Role
 from .barcode import BarcodeDrawing
+from random import randint
 
 User = get_user_model()
 
 class ProductSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Product
-		fields = ('id', 'name', 'description', 'amount_left', 'wholesale_price', 'retail_price', 'barcode', 'vendor_name', 'manufacturer', 'company')
-		read_only_fields = ('company',)
+		fields = ('id', 'name', 'description', 'amount_left', 'wholesale_price', 'retail_price', 'barcode', 'vendor_name', 'manufacturer', 'company', 'had_no_barcode')
+		read_only_fields = ('company', 'had_no_barcode')
 
 class SoldProductSerializer(serializers.ModelSerializer):
 	class Meta:
@@ -37,7 +38,7 @@ class SalesSerializer(serializers.ModelSerializer):
 		for product_data in products_data:
 			amount = product_data['amount']
 			barcode = product_data['barcode']
-			product = Product.objects.get(barcode=barcode)
+			product = Product.objects.get(barcode=barcode, company=company)
 			product.amount_left -= Decimal(amount)
 			product.save()
 			SoldProduct.objects.create(
@@ -72,7 +73,7 @@ class ReturnsSerializer(serializers.ModelSerializer):
 		for product_data in products_data:
 			amount = product_data['amount']
 			barcode = product_data['barcode']
-			product = Product.objects.get(barcode=barcode)
+			product = Product.objects.get(barcode=barcode, company=company)
 			product.amount_left  += Decimal(amount)
 			product.save()
 			ReturnedProduct.objects.create(
@@ -107,12 +108,24 @@ class ArrivalSerializer(serializers.ModelSerializer):
 		arrival = Arrival.objects.create(operator=user, company=company, date=timezone.now(), **validated_data)
 		for product_data in products_data:
 			name = product_data['name']
-			barcode = product_data.get('barcode', name)
-			print(barcode)
+			barcode = product_data.get('barcode', None)
+			had_no_barcode = False
 			if barcode is None:
-				print("Creating barcode")
-				BarcodeDrawing(name, name).save(formats=['pdf'], outDir=company.name, fnRoot=name)
-			product, created = Product.objects.get_or_create(barcode=barcode, company=company)
+				product = None
+				try:
+					barcode = randint(pow(10, 12), pow(10, 13) - 1)
+					product = Product.objects.get(barcode=barcode, company=company)
+				except Product.DoesNotExist:
+					product = None
+				while product is not None:
+					try:
+						barcode = randint(pow(10, 12), pow(10, 13) - 1)
+						product = Product.objects.get(barcode=barcode)
+					except Product.DoesNotExist:
+						product = None
+				BarcodeDrawing(barcode, name).save(formats=['pdf'], outDir=company.name, fnRoot=name)
+				had_no_barcode = True
+			product, created = Product.objects.get_or_create(barcode=barcode, company=company, had_no_barcode=True)
 			product.amount_left += product_data['amount']
 			product.wholesale_price = product_data['wholesale_price']
 			product.retail_price = product_data['retail_price']
