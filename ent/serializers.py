@@ -108,7 +108,7 @@ class ArrivalSerializer(serializers.ModelSerializer):
 		arrival = Arrival.objects.create(operator=user, company=company, date=timezone.now(), **validated_data)
 		for product_data in products_data:
 			name = product_data['name']
-			barcode = product_data.get('barcode', None)
+			barcode = product_data.pop('barcode', None)
 			had_no_barcode = False
 			if barcode is None:
 				product = None
