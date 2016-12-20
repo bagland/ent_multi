@@ -7,6 +7,9 @@ from django.utils import timezone
 from decimal import Decimal
 from datetime import date, time, datetime, timedelta
 from django.views.generic.base import TemplateView
+import os
+from generate_barcode import BarcodePage
+from django.contrib.auth.decorators import login_required
 
 from .filters import SalesFilter, ArrivalFilter, ProductFilter, ReturnsFilter, ArrivedProductFilter, SoldProductFilter, ReturnedProductFilter
 from rest_framework import authentication, permissions, viewsets, filters, status
@@ -30,9 +33,9 @@ class TurnoverPagination(LimitOffsetPagination):
 		return Response({
 			'count': self.count,
 			'next': self.get_next_link(),
-            'previous': self.get_previous_link(),
-            'total_products': self.total_products,
-            'total_sum': self.total_sum,
+			'previous': self.get_previous_link(),
+			'total_products': self.total_products,
+			'total_sum': self.total_sum,
 			'results': data
 		})
 
@@ -266,6 +269,21 @@ def send_summary_email():
 	msg.attach_alternative(html_content, "text/html")
 	msg.send()
 	return
+
+@login_required
+def get_pdf(request):
+	print(request.user)
+	try:
+		role = Role.objects.get(user=request.user)
+	except Role.DoesNotExist:
+		return HttpResponse('No role found!')
+	barcodePage = BarcodePage(role.company)
+	test_file = open(os.path.join(settings.BASE_DIR, 'new.pdf'), 'rb')
+	response = HttpResponse(content=test_file)
+	response['Content-Type'] = 'application/pdf'
+	response['Content-Disposition'] = 'attachment; filename="%s.pdf"' \
+									  % 'whatever'
+	return response
 
 def revenue(request):
 	today = datetime.now().date()

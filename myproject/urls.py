@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework_jwt.views import obtain_jwt_token
 from rest_framework_swagger.views import get_swagger_view
@@ -36,5 +37,8 @@ urlpatterns = [
     url(r'^revenue/', views.revenue),
     url(r'^month_revenue/', views.month_revenue),
     url(r'^$',  views.index, name='index'),
-    url(r'^api/docs/', schema_view)
+    url(r'^pdf/', views.get_pdf),
+    url(r'^api/docs/', schema_view),
+    url(r'^accounts/login/$', auth_views.login, {'template_name': 'admin/login.html'}),
+    url(r'^accounts/logout/$', auth_views.logout)
 ]
