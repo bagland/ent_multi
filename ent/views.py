@@ -128,7 +128,7 @@ class SalesViewSet(TurnoverMixin, viewsets.ModelViewSet):
 		if sales.company == role.company:
 			sold_products = SoldProduct.objects.filter(sales=sales)
 			for sold_product in sold_products:
-				product = Product.objects.get(barcode=sold_product.barcode)
+				product = Product.objects.get(barcode=sold_product.barcode, company=sales.company)
 				product.amount_left += sold_product.amount
 				product.save()
 				sold_product.delete()
@@ -209,7 +209,7 @@ class ArrivalViewSet(TurnoverMixin, viewsets.ModelViewSet):
 		if arrival.company == role.company:
 			arrived_products = ArrivedProduct.objects.filter(arrival=arrival)
 			for arrived_product in arrived_products:
-				product = Product.objects.get(barcode=arrived_product.barcode)
+				product = Product.objects.get(barcode=arrived_product.barcode, company=arrival.company)
 				product.amount_left -= arrived_product.amount
 				product.save()
 				arrived_product.delete()
