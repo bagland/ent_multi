@@ -6,6 +6,7 @@ from reportlab.pdfgen.canvas import Canvas
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 from reportlab.lib.units import inch, mm, cm
+import os
 from django.conf import settings
 
 class BarcodePage:
