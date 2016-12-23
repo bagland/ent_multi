@@ -6,11 +6,12 @@ from reportlab.pdfgen.canvas import Canvas
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 from reportlab.lib.units import inch, mm, cm
+from django.conf import settings
 
 class BarcodePage:
 	def __init__(self, company):
 		doc = BaseDocTemplate('new.pdf')
-		pdfmetrics.registerFont(TTFont('OpenSans-Regular', 'OpenSans-Regular.ttf'))
+		pdfmetrics.registerFont(TTFont(os.path.join(settings.BASE_DIR, 'OpenSans-Regular.ttf'), ''))
 		column_gap = 1 * cm
 		print(doc.leftMargin)
 		print(doc.width)
