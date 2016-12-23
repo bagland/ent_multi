@@ -47,8 +47,7 @@ class BarcodePage:
 		styleN = styles['Normal']
 		styleN.fontName = 'OpenSans-Regular'
 		products = Product.objects.filter(had_no_barcode=True, company=company)
-		for i in range(1, 100):
-			product = products[0]
+		for product in products:
 			story.append(Paragraph(product.name, styleN))
 			bcd = createBarcodeDrawing('Code128', value=product.barcode, barHeight=9*mm, humanReadable=True)
 			story.append(bcd)
