@@ -12,7 +12,7 @@ from django.conf import settings
 class BarcodePage:
 	def __init__(self, company):
 		doc = BaseDocTemplate('new.pdf')
-		pdfmetrics.registerFont(TTFont(os.path.join(settings.BASE_DIR, 'OpenSans-Regular.ttf'), ''))
+		pdfmetrics.registerFont(TTFont('OpenSans-Regular', os.path.join(settings.BASE_DIR, 'OpenSans-Regular.ttf')))
 		column_gap = 1 * cm
 		print(doc.leftMargin)
 		print(doc.width)
