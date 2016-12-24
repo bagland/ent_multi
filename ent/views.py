@@ -134,7 +134,7 @@ class SalesViewSet(TurnoverMixin, viewsets.ModelViewSet):
 			else:
 				sales_set = self.queryset.filter(date__lte=formatted_date_max+timedelta(1))
 		for sale in sales_set:
-			sold_products = SoldProduct.objects.filter(arrival=arrival)
+			sold_products = SoldProduct.objects.filter(sales=sale)
 			for product in sold_products:
 				total_sum += float(product.wholesale_price * product.amount)
 				total_count += 1
