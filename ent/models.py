@@ -7,6 +7,9 @@ from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 class Company(models.Model):
 	name = models.CharField(max_length=60, unique=True)
 
+	def __str__(self):
+		return self.name
+
 class Product(models.Model):
 	name = models.CharField(max_length=100, default='')
 	description = models.TextField(blank=True, default='')
@@ -143,3 +146,6 @@ class Role(models.Model):
 	)
 	user_role = models.CharField(max_length=2, choices=USER_TYPES, default='OW')
 	last_updated = models.DateTimeField(auto_now=True)
+
+	def __str__(self):
+		return ' '.join([self.user, self.user_role, self.company])
