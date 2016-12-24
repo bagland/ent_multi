@@ -124,6 +124,7 @@ class SalesViewSet(TurnoverMixin, viewsets.ModelViewSet):
 	def get_total_products_and_sum(self, date_min, date_max):
 		total_sum = 0.0
 		total_count = 0
+		sales_set = self.queryset
 		if date_min is not None:
 			sales_set = self.queryset.filter(date__gte=date_min)
 		if date_max is not None:
@@ -224,6 +225,7 @@ class ArrivalViewSet(TurnoverMixin, viewsets.ModelViewSet):
 	def get_total_products_and_sum(self, date_min, date_max):
 		total_sum = 0.0
 		total_count = 0
+		arrival_set = self.queryset
 		if date_min is not None:
 			arrival_set = self.queryset.filter(date__gte=date_min)
 		if date_max is not None:
