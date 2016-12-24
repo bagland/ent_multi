@@ -68,29 +68,29 @@ class TurnoverMixin(DefaultsMixin):
 			role = Role.objects.get(user=request.user)
 			date_min = request.query_params.get('date_min', None)
 			date_max = request.query_params.get('date_max', None)
-			self._paginator.total_products, self._paginator.total_sum = self.get_total_products_and_sum(date_min, date_max)
 			self.queryset = self.queryset.filter(company=role.company)
+			self._paginator.total_products, self._paginator.total_sum = self.get_total_products_and_sum(date_min, date_max)
 		except Role.DoesNotExist:
 			self.queryset = self.serializer_class.Meta.model.objects.none()
 		return super().list(request, *args, **kwargs)
 
-	def get_total_products_and_sum(self, date_min, date_max):
-		object_set = None
-		if date_min is not None:
-			object_set = self.object_class.objects.filter(date__gte=date_min)
-		if date_max is not None:
-			formatted_date_max = datetime.strptime(date_max, '%Y-%m-%d')
-			if object_set is None:
-				object_set = self.object_class.objects.filter(date__lte=formatted_date_max+timedelta(1))
-			else:
-				object_set = object_set.filter(date__lte=formatted_date_max+timedelta(1))
-		if object_set is None:
-			object_set = self.object_class.objects.all()
-		total_sum = 0.0
-		for product in object_set:
-			total_price = product.retail_price * product.amount
-			total_sum += float(total_price)
-		return object_set.count(), total_sum
+	# def get_total_products_and_sum(self, date_min, date_max):
+	# 	object_set = None
+	# 	if date_min is not None:
+	# 		object_set = self.object_class.objects.filter(date__gte=date_min)
+	# 	if date_max is not None:
+	# 		formatted_date_max = datetime.strptime(date_max, '%Y-%m-%d')
+	# 		if object_set is None:
+	# 			object_set = self.object_class.objects.filter(date__lte=formatted_date_max+timedelta(1))
+	# 		else:
+	# 			object_set = object_set.filter(date__lte=formatted_date_max+timedelta(1))
+	# 	if object_set is None:
+	# 		object_set = self.object_class.objects.all()
+	# 	total_sum = 0.0
+	# 	for product in object_set:
+	# 		total_price = product.retail_price * product.amount
+	# 		total_sum += float(total_price)
+	# 	return object_set.count(), total_sum
 
 class ProductViewSet(DefaultsMixin, viewsets.ModelViewSet):
 	"""
@@ -120,6 +120,25 @@ class SalesViewSet(TurnoverMixin, viewsets.ModelViewSet):
 	serializer_class = SalesSerializer
 	filter_class = SalesFilter
 	search_fields = ('date',)
+
+	def get_total_products_and_sum(self, date_min, date_max):
+		total_sum = 0.0
+		total_count = 0
+		if date_min is not None:
+			sales_set = self.queryset.filter(date__gte=date_min)
+		if date_max is not None:
+			formatted_date_max = datetime.strptime(date_max, '%Y-%m-%d')
+			if sales_set is not None:
+				sales_set = sales_set.filter(date__lte=formatted_date_max+timedelta(1))
+			else:
+				sales_set = self.queryset.filter(date__lte=formatted_date_max+timedelta(1))
+		for sale in sales_set:
+			print(arrival.id)
+			sold_products = ArrivedProduct.objects.filter(arrival=arrival)
+			for product in sold_products:
+				total_sum += float(product.wholesale_price * product.amount)
+				total_count += 1
+		return total_count, total_sum
 
 	def destroy(self, request, *args, **kwargs):
 		user = request.user
@@ -201,6 +220,25 @@ class ArrivalViewSet(TurnoverMixin, viewsets.ModelViewSet):
 	search_fields = ('date',)
 	filter_class = ArrivalFilter
 	ordering_fields = ('date',)
+
+	def get_total_products_and_sum(self, date_min, date_max):
+		total_sum = 0.0
+		total_count = 0
+		if date_min is not None:
+			arrival_set = self.queryset.filter(date__gte=date_min)
+		if date_max is not None:
+			formatted_date_max = datetime.strptime(date_max, '%Y-%m-%d')
+			if arrival_set is not None:
+				arrival_set = arrival_set.filter(date__lte=formatted_date_max+timedelta(1))
+			else:
+				arrival_set = self.queryset.filter(date__lte=formatted_date_max+timedelta(1))
+		for arrival in arrival_set:
+			print(arrival.id)
+			arrived_products = ArrivedProduct.objects.filter(arrival=arrival)
+			for product in arrived_products:
+				total_sum += float(product.wholesale_price * product.amount)
+				total_count += 1
+		return total_count, total_sum
 
 	def destroy(self, request, *args, **kwargs):
 		user = request.user
