@@ -148,4 +148,4 @@ class Role(models.Model):
 	last_updated = models.DateTimeField(auto_now=True)
 
 	def __str__(self):
-		return ' '.join([self.user, self.user_role, self.company])
+		return ' '.join([self.user.email, self.user_role, self.company.name])
