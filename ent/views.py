@@ -116,7 +116,7 @@ class SalesViewSet(TurnoverMixin, viewsets.ModelViewSet):
 	Продажа товара
 	"""
 	object_class = SoldProduct
-	queryset = Sales.objects.order_by('date')
+	queryset = Sales.objects.order_by('-date')
 	serializer_class = SalesSerializer
 	filter_class = SalesFilter
 	search_fields = ('date',)
@@ -215,7 +215,7 @@ class ArrivalViewSet(TurnoverMixin, viewsets.ModelViewSet):
 	Приход товара
 	"""
 	object_class = ArrivedProduct
-	queryset = Arrival.objects.order_by('date')
+	queryset = Arrival.objects.order_by('-date')
 	serializer_class = ArrivalSerializer
 	search_fields = ('date',)
 	filter_class = ArrivalFilter
