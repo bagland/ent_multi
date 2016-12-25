@@ -136,7 +136,7 @@ class SalesViewSet(TurnoverMixin, viewsets.ModelViewSet):
 		for sale in sales_set:
 			sold_products = SoldProduct.objects.filter(sales=sale)
 			for product in sold_products:
-				total_sum += float(product.wholesale_price * product.amount)
+				total_sum += float(product.retail_price * product.amount)
 				total_count += 1
 		return total_count, total_sum
 
