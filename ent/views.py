@@ -20,6 +20,9 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
+from rest_framework_jwt.serializers import JSONWebTokenSerializer
+from rest_framework_jwt.views import JSONWebTokenAPIView
+from rest_framework_jwt.utils import jwt_response_payload_handler
 from .models import Product, Sales, Arrival, Returns, SoldProduct, ReturnedProduct, ArrivedProduct, Company, Role
 from .serializers import ProductSerializer, SalesSerializer, UserSerializer, ArrivalSerializer, ReturnsSerializer, SoldProductSerializer, ReturnedProductSerializer, ArrivedProductSerializer
 from django.template import loader, Context
@@ -345,6 +348,20 @@ def month_revenue(request):
 	html = "<html><body>This month's revenue is {}</body></html>".format(total)
 	return HttpResponse(html)
 
+class UserTokenAPIView(JSONWebTokenAPIView):
+	serializer_class = JSONWebTokenSerializer
+
+	def post(self, request, *args, **kwargs):
+		serializer = self.get_serializer(data=request.data)
+		if serializer.is_valid():
+			user = serializer.object.get('user') or request.user
+			token = serializer.object.get('token')
+			response_data = jwt_response_payload_handler(token, user, request)
+			response_data['user'] = UserSerializer(user, context={'request': request}).data
+
+			return Response(response_data)
+
+		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 def createAPIErrorJsonReponse(msg, code):
 	return JsonResponse({'status': 'error',

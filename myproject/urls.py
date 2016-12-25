@@ -32,7 +32,7 @@ schema_view = get_swagger_view(title='Enterprise API')
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^api-token-auth/', obtain_jwt_token),
+    url(r'^api-token-auth/', views.UserTokenAPIView.as_view()),
     url(r'^api/', include(router.urls)),
     url(r'^revenue/', views.revenue),
     url(r'^month_revenue/', views.month_revenue),
