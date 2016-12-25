@@ -308,7 +308,6 @@ def send_summary_email():
 	msg.send()
 	return
 
-@login_required
 def get_pdf(request):
 	print(request.user)
 	try:
