@@ -120,12 +120,11 @@ class ArrivalSerializer(serializers.ModelSerializer):
 				while product is not None:
 					try:
 						barcode = randint(pow(10, 12), pow(10, 13) - 1)
-						product = Product.objects.get(barcode=barcode)
+						product = Product.objects.get(barcode=barcode, company=company)
 					except Product.DoesNotExist:
 						product = None
-				BarcodeDrawing(barcode, name).save(formats=['pdf'], outDir=company.name, fnRoot=name)
 				had_no_barcode = True
-			product, created = Product.objects.get_or_create(barcode=barcode, company=company, had_no_barcode=True)
+			product, created = Product.objects.get_or_create(barcode=barcode, company=company, had_no_barcode=had_no_barcode)
 			product.amount_left += product_data['amount']
 			product.wholesale_price = product_data['wholesale_price']
 			product.retail_price = product_data['retail_price']
