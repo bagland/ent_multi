@@ -124,7 +124,12 @@ class ArrivalSerializer(serializers.ModelSerializer):
 					except Product.DoesNotExist:
 						product = None
 				had_no_barcode = True
-			product, created = Product.objects.get_or_create(barcode=barcode, company=company, had_no_barcode=had_no_barcode)
+			product = Product.objects.get(name=name, company=company)
+			if product is None:
+				product, created = Product.objects.get_or_create(barcode=barcode, company=company, had_no_barcode=had_no_barcode)
+			else:
+				product.barcode = barcode
+				product.had_no_barcode = had_no_barcode
 			product.amount_left += product_data['amount']
 			product.wholesale_price = product_data['wholesale_price']
 			product.retail_price = product_data['retail_price']
