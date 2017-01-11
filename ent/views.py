@@ -220,9 +220,9 @@ class ArrivalViewSet(TurnoverMixin, viewsets.ModelViewSet):
 	object_class = ArrivedProduct
 	queryset = Arrival.objects.order_by('-date')
 	serializer_class = ArrivalSerializer
-	search_fields = ('date', 'name',)
+	search_fields = ('date',)
 	filter_class = ArrivalFilter
-	ordering_fields = ('date', 'name',)
+	ordering_fields = ('date',)
 
 	def get_total_products_and_sum(self, date_min, date_max):
 		total_sum = 0.0
