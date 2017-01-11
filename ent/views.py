@@ -220,9 +220,9 @@ class ArrivalViewSet(TurnoverMixin, viewsets.ModelViewSet):
 	object_class = ArrivedProduct
 	queryset = Arrival.objects.order_by('-date')
 	serializer_class = ArrivalSerializer
-	search_fields = ('date',)
+	search_fields = ('date', 'name',)
 	filter_class = ArrivalFilter
-	ordering_fields = ('date',)
+	ordering_fields = ('date', 'name',)
 
 	def get_total_products_and_sum(self, date_min, date_max):
 		total_sum = 0.0
@@ -311,6 +311,7 @@ def send_summary_email():
 	msg.send()
 	return
 
+@login_required
 def get_pdf(request):
 	print(request.user)
 	try:
