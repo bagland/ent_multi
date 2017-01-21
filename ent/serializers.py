@@ -110,7 +110,7 @@ class ArrivalSerializer(serializers.ModelSerializer):
 			name = product_data['name']
 			barcode = product_data.pop('barcode', None)
 			had_no_barcode = False
-			if barcode is None:
+			if barcode is None or barcode == '':
 				product = None
 				try:
 					barcode = randint(pow(10, 12), pow(10, 13) - 1)

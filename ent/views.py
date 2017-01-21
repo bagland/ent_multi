@@ -239,7 +239,7 @@ class ArrivalViewSet(TurnoverMixin, viewsets.ModelViewSet):
 		for arrival in arrival_set:
 			arrived_products = ArrivedProduct.objects.filter(arrival=arrival)
 			for product in arrived_products:
-				total_sum += float(product.wholesale_price * product.amount)
+				total_sum += float(product.retail_price * product.amount)
 				total_count += 1
 		return total_count, total_sum
 
