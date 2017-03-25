@@ -39,6 +39,7 @@ class TurnoverPagination(LimitOffsetPagination):
 			'previous': self.get_previous_link(),
 			'total_products': self.total_products,
 			'total_sum': self.total_sum,
+			'balance': self.balance,
 			'results': data
 		})
 
@@ -67,12 +68,20 @@ class TurnoverMixin(DefaultsMixin):
 		if self.pagination_class is not None:
 			self._paginator = self.pagination_class()
 		self._paginator.total_products, self._paginator.total_sum = 0, 0
+		self._paginator.balance = 0.0
 		try:
 			role = Role.objects.get(user=request.user)
 			date_min = request.query_params.get('date_min', None)
 			date_max = request.query_params.get('date_max', None)
 			self.queryset = self.queryset.filter(company=role.company)
 			self._paginator.total_products, self._paginator.total_sum = self.get_total_products_and_sum(date_min, date_max)
+			print(role.company)
+			all_products = Product.objects.filter(company=role.company)
+			print(all_products.count())
+			sum = 0.0
+			for p in all_products:
+				sum += float(p.retail_price * p.amount_left)
+			self._paginator.balance = sum
 		except Role.DoesNotExist:
 			self.queryset = self.serializer_class.Meta.model.objects.none()
 		return super().list(request, *args, **kwargs)
