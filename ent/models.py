@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.conf import settings
 from decimal import Decimal
-from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
+from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 
 class Company(models.Model):
 	name = models.CharField(max_length=60, unique=True)
@@ -108,7 +108,7 @@ class MyUserManager(BaseUserManager):
 		user.save()
 		return user
 
-class MyUser(AbstractBaseUser):
+class MyUser(AbstractBaseUser, PermissionsMixin):
 	email = models.EmailField(
 		verbose_name = 'email address',
 		max_length = 255,
@@ -119,6 +119,7 @@ class MyUser(AbstractBaseUser):
 	last_name = models.CharField(max_length=40, blank=True)
 	is_active = models.BooleanField(default=True)
 	is_admin = models.BooleanField(default=False)
+	is_staff = models.BooleanField(default=False)
 
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
