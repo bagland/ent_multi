@@ -17,8 +17,8 @@ class Product(models.Model):
 	retail_price = models.DecimalField(default=0, max_digits=10, decimal_places=2)
 	wholesale_price = models.DecimalField(default=0, max_digits=10, decimal_places=2)
 	barcode = models.CharField(max_length=100)
-	vendor_name = models.CharField(default='', max_length=100)
-	manufacturer = models.CharField(default='', max_length=100)
+	vendor_name = models.CharField(default='', max_length=100, blank=True)
+	manufacturer = models.CharField(default='', max_length=100, blank=True)
 	company = models.ForeignKey(Company)
 	had_no_barcode = models.BooleanField(default=False)
 
