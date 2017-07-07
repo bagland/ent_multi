@@ -14,9 +14,7 @@ class ProductModelAdmin(admin.ModelAdmin):
 
 	def get_queryset(self, request):
 		qs = super(ProductModelAdmin, self).get_queryset(request)
-		role = Role.objects.get(user=request.user)
-		return qs.filter(company=role.company)
-		if request.user.is_superuser:
+		if request.user.email == "sofi_kz@mail.ru":
 			return qs
 		role = Role.objects.get(user=request.user)
 		return qs.filter(company=role.company)
