@@ -14,6 +14,8 @@ class ProductModelAdmin(admin.ModelAdmin):
 
 	def get_queryset(self, request):
 		qs = super(ProductModelAdmin, self).get_queryset(request)
+		role = Role.objects.get(user=request.user)
+		return qs.filter(company=role.company)
 		if request.user.is_superuser:
 			return qs
 		role = Role.objects.get(user=request.user)
